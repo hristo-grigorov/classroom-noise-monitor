@@ -1,0 +1,109 @@
+<!doctype html>
+<html lang="he" dir="rtl">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#101a30">
+  <meta name="description" content="מד רעש כיתתי פשוט ופרטי: מד מהירות צבעוני, כיול אוטומטי ועיבוד מקומי של קול מהמיקרופון.">
+  <title>מד הרעש הכיתתי | Classroom Noise Monitor</title>
+  <link rel="stylesheet" href="./styles.css">
+</head>
+<body>
+  <div class="app-shell">
+    <header class="topbar">
+      <div class="identity">
+        <div class="identity-icon" aria-hidden="true">◉</div>
+        <div>
+          <h1>מד הרעש הכיתתי</h1>
+          <p class="identity-subtitle">מקשיבים יחד. לומדים בנחת.</p>
+        </div>
+      </div>
+      <div class="header-actions">
+        <span id="micStatus" class="mic-chip mic-chip--off">● המיקרופון כבוי</span>
+        <button id="fullscreenButton" class="button button--subtle" type="button">⛶ מסך מלא</button>
+        <button id="startStopButton" class="button button--primary" type="button">▶ התחלת מדידה</button>
+      </div>
+    </header>
+
+    <main>
+      <section class="monitor-panel" aria-labelledby="monitorTitle">
+        <div class="monitor-heading">
+          <p class="eyebrow">בואו נשמור על סביבת לימוד נעימה</p>
+          <h2 id="monitorTitle">איך נשמעת הכיתה עכשיו?</h2>
+        </div>
+
+        <div class="gauge-container">
+          <svg class="gauge" viewBox="0 0 800 425" role="img" aria-label="מחוג המציג את עוצמת הרעש היחסית. ירוק שקט, צהוב מתחזק, אדום רועש מדי.">
+            <path class="gauge-track" id="gaugeTrack"></path>
+            <path class="gauge-zone gauge-zone--green" id="greenArc"></path>
+            <path class="gauge-zone gauge-zone--yellow" id="yellowArc"></path>
+            <path class="gauge-zone gauge-zone--red" id="redArc"></path>
+            <g id="ticks" class="ticks" aria-hidden="true"></g>
+            <g id="needle" class="needle" aria-hidden="true">
+              <line x1="400" y1="365" x2="164" y2="365"></line>
+            </g>
+            <circle class="needle-halo" cx="400" cy="365" r="32"></circle>
+            <circle class="needle-center" cx="400" cy="365" r="17"></circle>
+            <circle class="needle-core" cx="400" cy="365" r="5"></circle>
+          </svg>
+          <div class="zone-legend" aria-hidden="true">
+            <span class="legend-item"><i class="legend-dot legend-dot--green"></i> נעים ושקט</span>
+            <span class="legend-item"><i class="legend-dot legend-dot--yellow"></i> מתגבר</span>
+            <span class="legend-item"><i class="legend-dot legend-dot--red"></i> חזק מדי</span>
+          </div>
+        </div>
+
+        <div id="statusCard" class="status-card status-card--idle" role="status" aria-live="polite" aria-atomic="true">
+          <span class="status-icon" id="statusIcon" aria-hidden="true">◉</span>
+          <div>
+            <strong id="statusTitle">מוכנים להתחיל?</strong>
+            <p id="statusMessage">לוחצים על ״התחלת מדידה״ כדי להציג את רמת הרעש.</p>
+          </div>
+        </div>
+        <p class="measurement-note">המדידה היא יחסית למיקרופון של המחשב, ולא מדידת דציבלים מכוילת.</p>
+      </section>
+
+      <details class="settings-panel" id="settingsPanel">
+        <summary>⚙ הגדרות המורה וכיול אוטומטי <span class="summary-hint">לחצו לפתיחה</span></summary>
+        <div class="settings-inner">
+          <div class="settings-intro">
+            <div>
+              <h3>התאמה לכיתה שלכם</h3>
+              <p>כדי לכייל, בקשו מהתלמידים לעבוד בעוצמת הדיבור שנחשבת תקינה, ואז הפעילו כיול. המד יקשיב במשך 5 שניות ויציע גבולות התחלה.</p>
+            </div>
+            <div class="calibration-actions">
+              <button type="button" class="button button--accent" id="calibrateButton">◎ כיול אוטומטי (5 שניות)</button>
+              <p id="calibrationFeedback" role="status" aria-live="polite"></p>
+            </div>
+          </div>
+
+          <div class="slider-grid">
+            <label class="slider-card" for="yellowSlider">
+              <span class="slider-heading"><span>🟡 תחילת צהוב</span><output id="yellowValue" for="yellowSlider">45</output></span>
+              <input type="range" id="yellowSlider" min="10" max="80" step="1" value="45">
+              <span class="slider-caption">מעל עוצמה זו מתחיל להיווצר רעש.</span>
+            </label>
+            <label class="slider-card" for="redSlider">
+              <span class="slider-heading"><span>🔴 תחילת אדום</span><output id="redValue" for="redSlider">70</output></span>
+              <input type="range" id="redSlider" min="25" max="98" step="1" value="70">
+              <span class="slider-caption">מעל עוצמה זו רצוי להנמיך את הקול.</span>
+            </label>
+            <label class="slider-card" for="hysteresisSlider">
+              <span class="slider-heading"><span>↔ מרווח יציבות (Hysteresis)</span><output id="hysteresisValue" for="hysteresisSlider">4</output></span>
+              <input type="range" id="hysteresisSlider" min="0" max="10" step="1" value="4">
+              <span class="slider-caption">מונע מעבר הלוך ושוב בין צבעים כשנמצאים ממש על הגבול.</span>
+            </label>
+          </div>
+          <div class="settings-footer">
+            <p>המחוג מוחלק בזמן אמת. התראת ״רועש מדי״ מופיעה רק אחרי כשתי שניות של רעש אדום מתמשך. אין שמירה או שליחה של שמע.</p>
+            <button id="resetButton" class="button button--subtle" type="button">איפוס הגדרות</button>
+          </div>
+        </div>
+      </details>
+    </main>
+
+    <footer class="app-footer">🔒 עיבוד הקול מתבצע בדפדפן בלבד · אין הקלטה או שמירת שיחות · ניתן להמשיך להשתמש גם ללא אינטרנט לאחר טעינה ראשונה מוצלחת</footer>
+  </div>
+  <script type="module" src="./app.js"></script>
+</body>
+</html>
